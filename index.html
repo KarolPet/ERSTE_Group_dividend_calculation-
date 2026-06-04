@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulačka pro vrácení daně z dividendy akcií ERSTE</title>
+
+<style>
+:root{
+  --bg1:#0b2f6b;
+  --bg2:#144b9a;
+  --primary:#0f5bd8;
+  --accent:#2d8cff;
+  --success:#e8f7ef;
+  --success-text:#117a43;
+  --text:#1f2937;
+  --border:#e5eaf3;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  min-height:100vh;
+  padding:24px;
+}
+
+.container{
+  max-width:1400px;
+  margin:auto;
+}
+
+.hero{
+  color:white;
+  text-align:center;
+  margin-bottom:24px;
+}
+
+.hero h1{
+  margin:0;
+  font-size:clamp(1.8rem,4vw,3rem);
+  font-weight:800;
+}
+
+.hero p{
+  opacity:.9;
+  margin-top:8px;
+}
+
+.card{
+  background:rgba(255,255,255,.98);
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 25px 60px rgba(0,0,0,.18);
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  color:var(--text);
+}
+
+th{
+  background:var(--primary);
+  color:white;
+  padding:16px;
+  font-size:.9rem;
+  position:sticky;
+  top:0;
+}
+
+th:first-child{border-top-left-radius:18px;}
+th:last-child{border-top-right-radius:18px;}
+
+td{
+  padding:14px;
+  border-bottom:1px solid var(--border);
+  text-align:right;
+  white-space:nowrap;
+}
+
+td:first-child{
+  text-align:center;
+  font-weight:700;
+}
+
+tr:hover td{
+  background:#f8fbff;
+}
+
+input{
+  width:110px;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid #d5ddea;
+  text-align:center;
+  font-size:1rem;
+}
+
+input:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+
+.highlight{
+  background:var(--success);
+  color:var(--success-text);
+  font-weight:800;
+}
+
+tfoot tr{
+  background:#eef5ff;
+  font-weight:800;
+}
+
+@media(max-width:900px){
+  body{padding:12px}
+  .card{border-radius:22px}
+  th,td{padding:10px;font-size:.85rem}
+  input{width:85px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="hero">
+<h1>Kalkulačka pro vrácení daně z dividendy akcií ERSTE</h1>
+</div>
+
+<div class="card">
+<div class="table-wrap">
+
+<table>
+<thead>
+<tr>
+<th>Rok</th>
+<th>Počet akcií</th>
+<th>Dividenda (€)</th>
+<th>Zdaněno 27,5 %</th>
+<th>Nárok na vrácení 17,5 %</th>
+<th>Dodanění ČR 5 %</th>
+<th>Čistý dodatečný příjem</th>
+</tr>
+</thead>
+
+<tbody id="tb"></tbody>
+
+<tfoot>
+<tr>
+<td colspan="2">CELKEM</td>
+<td id="sd"></td>
+<td id="st"></td>
+<td id="sr" class="highlight"></td>
+<td id="sc"></td>
+<td id="sn" class="highlight"></td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+const data=[
+{year:2022,dividend:1.6},
+{year:2023,dividend:1.9},
+{year:2024,dividend:2.7},
+{year:2025,dividend:3.0}
+];
+
+const tb=document.getElementById("tb");
+
+data.forEach((r,i)=>{
+tb.innerHTML+=`
+<tr>
+<td>${r.year}</td>
+<td><input type="number" min="0" value="100" class="shares" oninput="calc()"></td>
+<td id="d${i}"></td>
+<td id="t${i}"></td>
+<td id="r${i}" class="highlight"></td>
+<td id="c${i}"></td>
+<td id="n${i}" class="highlight"></td>
+</tr>`;
+});
+
+function eur(v){
+ return new Intl.NumberFormat('cs-CZ',{
+   minimumFractionDigits:2,
+   maximumFractionDigits:2
+ }).format(v)+' €';
+}
+
+function calc(){
+ let sd=0,st=0,sr=0,sc=0,sn=0;
+
+ document.querySelectorAll('.shares').forEach((el,i)=>{
+   const shares=Number(el.value)||0;
+
+   const div=shares*data[i].dividend;
+   const tax=div*0.275;
+   const refund=div*0.175;
+   const cz=div*0.05;
+   const net=refund-cz;
+
+   document.getElementById('d'+i).innerText=eur(div);
+   document.getElementById('t'+i).innerText=eur(tax);
+   document.getElementById('r'+i).innerText=eur(refund);
+   document.getElementById('c'+i).innerText=eur(cz);
+   document.getElementById('n'+i).innerText=eur(net);
+
+   sd+=div; st+=tax; sr+=refund; sc+=cz; sn+=net;
+ });
+
+ document.getElementById('sd').innerText=eur(sd);
+ document.getElementById('st').innerText=eur(st);
+ document.getElementById('sr').innerText=eur(sr);
+ document.getElementById('sc').innerText=eur(sc);
+ document.getElementById('sn').innerText=eur(sn);
+}
+
+calc();
+</script>
+
+</body>
+</html>
